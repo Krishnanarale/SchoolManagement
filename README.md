@@ -18,6 +18,16 @@
 
 - MySql 10.4.11-MariaDB - Source distribution
 
+# How to run.
+
+- Clone repository in htdocs.
+- In directory find 'restaurant.sql' and import file in your database.
+- Set database creadential at application/config/database.php
+- Visit url in browser "http://localhost/RestaurantManagement".
+- Admin Credential listed below.
+	- email: admin@admin.com
+	- password: password
+
 # For any help.
 
 - Eamil - krishnanarale@yahoo.com
