@@ -23,10 +23,10 @@
 - Clone repository in htdocs.
 - In directory find 'restaurant.sql' and import file in your database.
 - Set database creadential at application/config/database.php
-- Visit url in browser "http://localhost/RestaurantManagement".
+- Visit url in browser "http://localhost/SchoolManagement".
 - Admin Credential listed below.
-	- email: admin@admin.com
-	- password: password
+	- email: admin
+	- password: admin
 
 # For any help.
 
