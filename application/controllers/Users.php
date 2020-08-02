@@ -40,12 +40,14 @@ class Users extends MY_Controller
 			$password = md5($this->input->post('password'));
 
 			$login = $this->model_users->login($username, $password);
+			$user = $this->model_users->user($login); // Added by krishh for session.
 
 			if($login) {
 				$this->load->library('session');
 
 				$user_data = array(
 					'id' => $login,
+					'user' => $user, // Newly added data to session.
 					'logged_in' => true
 				);
 
@@ -197,6 +199,206 @@ class Users extends MY_Controller
 			$this->form_validation->set_message('validate_current_password', 'The {field} is incorrect');
 			return false;			
 		} // /else	
+	}
+
+	/*
+	*------------------------------------
+	* retrieve user name 
+	*------------------------------------
+	*/
+	public function fetchUsersData($userId = null)
+	{
+		if($userId) {
+			$userData = $this->model_users->fetchUserData($userId);
+			echo json_encode($userData);
+		}
+		else {
+			$userData = $this->model_users->fetchUserData();
+			$result = array('data' => array());
+
+			$x = 1;
+			foreach ($userData as $key => $value) {
+
+				$button = '<!-- Single button -->
+				<div class="btn-group">
+				  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				    Action <span class="caret"></span>
+				  </button>
+				  <ul class="dropdown-menu">
+				    <li><a type="button" data-toggle="modal" data-target="#updateUserModal" onclick="editUser('.$value['user_id'].')"> <i class="glyphicon glyphicon-edit"></i> Edit</a></li>
+				    <li><a type="button" data-toggle="modal" data-target="#removeUserModal" onclick="removeUser('.$value['user_id'].')"> <i class="glyphicon glyphicon-trash"></i> Remove</a></li>		    
+				  </ul>
+				</div>';
+
+				$result['data'][$key] = array(
+					$x,
+					$value['fname'],
+					$value['lname'],
+					$value['username'],
+					$value['email'],
+					$value['type'],
+					$button
+				);
+				$x++;
+			} // /froeach
+
+			echo json_encode($result);
+		} // /else		
+	}
+
+	/*
+	*------------------------------------
+	* validates the user's information
+	* form and inserts into the database
+	*------------------------------------
+	*/
+	public function create()
+	{
+		$validator = array('success' => false, 'messages' => array());
+
+		$validate_data = array(
+			array(
+				'field' => 'fname',
+				'label' => 'First Name',
+				'rules' => 'required'
+			),
+			array(
+				'field' => 'lname',
+				'label' => 'Last Name',
+				'rules' => 'required'
+			),
+			array(
+				'field' => 'username',
+				'label' => 'Username',
+				'rules' => 'required'
+			),
+			array(
+				'field' => 'password',
+				'label' => 'Password',
+				'rules' => 'required'
+			),
+			array(
+				'field' => 'email',
+				'label' => 'Email',
+				'rules' => 'required'
+			),
+			array(
+				'field' => 'type',
+				'label' => 'Role',
+				'rules' => 'required'
+			)
+		);
+
+		$this->form_validation->set_rules($validate_data);
+		$this->form_validation->set_error_delimiters('<p class="text-danger">','</p>');
+
+		if($this->form_validation->run() === true) {	
+			$create = $this->model_users->create();					
+			if($create == true) {
+				$validator['success'] = true;
+				$validator['messages'] = "Successfully added";
+			}
+			else {
+				$validator['success'] = false;
+				$validator['messages'] = "Error while inserting the information into the database";
+			}			
+		} 	
+		else {			
+			$validator['success'] = false;
+			foreach ($_POST as $key => $value) {
+				$validator['messages'][$key] = form_error($key);
+			}			
+		} // /else
+
+		echo json_encode($validator);
+	}
+
+	/*
+	*------------------------------------
+	* updates user information
+	*------------------------------------
+	*/
+	public function updateInfo($userId = null)
+	{
+		if($userId) {
+			$validator = array('success' => false, 'messages' => array());
+
+			$validate_data = array(
+				array(
+					'field' => 'fname',
+					'label' => 'First Name',
+					'rules' => 'required'
+				),
+				array(
+					'field' => 'lname',
+					'label' => 'Last Name',
+					'rules' => 'required'
+				),			
+				array(
+					'field' => 'username',
+					'label' => 'Username',
+					'rules' => 'required'
+				),
+				array(
+					'field' => 'email',
+					'label' => 'Email',
+					'rules' => 'required'
+				),
+				array(
+					'field' => 'type',
+					'label' => 'Role',
+					'rules' => 'required'
+				)
+			);
+
+			$this->form_validation->set_rules($validate_data);
+			$this->form_validation->set_error_delimiters('<p class="text-danger">','</p>');
+
+			if($this->form_validation->run() === true) {							
+				$updateInfo = $this->model_users->updateInfo($userId);					
+				if($updateInfo == true) {
+					$validator['success'] = true;
+					$validator['messages'] = "Successfully added";
+				}
+				else {
+					$validator['success'] = false;
+					$validator['messages'] = "Error while inserting the information into the database";
+				}			
+			} 	
+			else {
+				$validator['success'] = false;
+				foreach ($_POST as $key => $value) {
+					$validator['messages'][$key] = form_error($key);
+				}			
+			} // /else
+
+			echo json_encode($validator);
+
+		}					
+	}
+
+	/*
+	*------------------------------------
+	* removes user information 
+	*------------------------------------
+	*/
+	public function remove($userId = null)
+	{
+		$validator = array('success' => false, 'messages' => array());
+
+		if($userId) {
+			$remove = $this->model_users->remove($userId);
+			if($remove) {
+				$validator['success'] = true;
+				$validator['messages'] = "Successfully Removed";
+			} 
+			else {
+				$validator['success'] = false;
+				$validator['messages'] = "Error while removing the information";	
+			} // /else
+		} // /if
+
+		echo json_encode($validator);		
 	}
 
 }

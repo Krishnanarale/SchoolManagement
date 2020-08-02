@@ -2,6 +2,11 @@
 
 class Pages extends MY_Controller
 {
+    public function __construct() {
+        parent::__construct();
+        $this->load->library('session');
+    }
+
 	public function view($page = 'login')
 	{
         if (!file_exists(APPPATH.'views/'.$page.'.php'))
@@ -12,7 +17,7 @@ class Pages extends MY_Controller
 
         $data['title'] = ucfirst($page); // Capitalize the first letter
 
-        if($page == 'section' || $page == 'subject' || $page == 'student' || $page == 'marksheet' || $page == 'accounting') {
+        if($page == 'section' || $page == 'subject' || $page == 'student' || $page == 'marksheet' || $page == 'accounting' || $page == 'users') {
             $this->load->model('model_classes');
             $data['classData'] = $this->model_classes->fetchClassData();
 
@@ -24,6 +29,9 @@ class Pages extends MY_Controller
             $data['totalIncome'] = $this->model_accounting->totalIncome();
             $data['totalExpenses'] = $this->model_accounting->totalExpenses();
             $data['totalBudget'] = $this->model_accounting->totalBudget();
+
+            $this->load->model('model_resources');
+            $data['resources'] = $this->model_resources->fetchAppResourcesData();
         }
 
         if($page == 'setting') {
@@ -56,7 +64,7 @@ class Pages extends MY_Controller
         } 
         else{
             $this->isNotLoggedIn();
-
+            $data['sessionUser'] = $this->session->userdata('user'); // Session data added by krihh
             $this->load->view('templates/header', $data);
             $this->load->view($page, $data);    
             $this->load->view('templates/footer', $data);    

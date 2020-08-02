@@ -52,6 +52,19 @@ class Model_Users extends CI_Model
 			return false;
 		}
 	}
+	// User funtion added for getting user data.
+	public function user($id= null) {
+		if($id) {
+			$sql = "SELECT * FROM users WHERE user_id = ?";
+			$query = $this->db->query($sql, array($id));
+			$result = $query->row_array();
+
+			return ($query->num_rows() === 1 ? $result : false);
+		}
+		else {
+			return false;
+		}
+	}
 
 	public function fetchUserData($userId = null) 
 	{
@@ -60,6 +73,11 @@ class Model_Users extends CI_Model
 			$query = $this->db->query($sql, array($userId));
 			return $query->row_array();
 		}
+
+		$sql = "SELECT user_id, fname, lname, username, email, ar.text AS type FROM users AS u JOIN appResources AS ar ON u.type = ar.id";
+		$query = $this->db->query($sql);
+		$result = $query->result_array();
+		return $result;
 	}
 
 	public function updateProfile($userId = null)
@@ -90,6 +108,48 @@ class Model_Users extends CI_Model
 			$status = $this->db->update('users', $update_data);
 			return ($status == true ? true : false);
 		}
+	}
+
+	/*
+	*------------------------------------
+	* inserts the users information
+	* into the database 
+	*------------------------------------
+	*/
+	public function create()
+	{
+		$data = $this->input->post();
+		$data['password'] = md5($this->input->post('password'));
+		$status = $this->db->insert('users', $data);		
+		return ($status == true ? true : false);
+	}
+
+	/*
+	*------------------------------------
+	* updates user information
+	*------------------------------------
+	*/
+	public function updateInfo($userId = null)
+	{
+		if($userId) {
+			$this->db->where('user_id', $userId);
+			$query = $this->db->update('users', $this->input->post());
+			return ($query === true ? true : false);
+		}			
+	}
+
+	/*
+	*------------------------------------
+	* removes user information 
+	*------------------------------------
+	*/
+	public function remove($userId = null)
+	{
+		if($userId) {
+			$this->db->where('user_id', $userId);
+			$result = $this->db->delete('users');
+			return ($result === true ? true: false); 
+		} // /if
 	}
 
 }

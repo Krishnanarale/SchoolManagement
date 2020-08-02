@@ -121,6 +121,7 @@ class Student extends MY_Controller
 	public function fetchClassSection($classId = null)
 	{
 		if($classId) {
+			$option = "";
 			$sectionData = $this->model_section->fetchSectionDataByClass($classId);
 			if($sectionData) {
 				foreach ($sectionData as $key => $value) {
